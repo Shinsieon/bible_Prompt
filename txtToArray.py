@@ -18,7 +18,7 @@ def text_to_json():
 dic = text_to_json()
 
 # 모든 텍스트 파일을 읽어서 하나의 파일로 통합
-output_file_path = 'merged.json'
+output_file_path = 'merged_.json'
 
 with open(output_file_path, 'w', encoding='cp949') as output_file:
     json.dump(dic, output_file, ensure_ascii=False, indent=2)

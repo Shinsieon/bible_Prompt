@@ -9,17 +9,17 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QStringListModel,QModelIndex, Qt
+from PyQt5.QtCore import QStringListModel,QModelIndex, Qt, QItemSelectionModel
 from PyQt5.QtGui import QFont
 import json
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.resize(696, 613)
-        self.textEdit = QtWidgets.QTextEdit(Dialog)
-        self.textEdit.setGeometry(QtCore.QRect(10, 10, 261, 31))
-        self.textEdit.setObjectName("textEdit")
-        self.textEdit.setPlaceholderText("ex) 창 1 2")
+        self.lineEdit = QtWidgets.QLineEdit(Dialog)
+        self.lineEdit.setGeometry(QtCore.QRect(10, 10, 261, 31))
+        self.lineEdit.setObjectName("lineEdit")
+        self.lineEdit.setPlaceholderText("ex) 창 1 2")
 
         self.pushButton = QtWidgets.QPushButton(Dialog)
         self.pushButton.setGeometry(QtCore.QRect(280, 10, 71, 31))
@@ -29,6 +29,7 @@ class Ui_Dialog(object):
         self.listView.setGeometry(QtCore.QRect(10, 50, 341, 131))
         self.listView.setObjectName("listView")
         self.listView.clicked.connect(self.on_item_clicked)
+
         self.comboBox = QtWidgets.QComboBox(Dialog)
         self.comboBox.setGeometry(QtCore.QRect(10, 470, 111, 31))
         self.comboBox.setObjectName("comboBox")
@@ -45,16 +46,26 @@ class Ui_Dialog(object):
         self.pushButton_3 = QtWidgets.QPushButton(Dialog)
         self.pushButton_3.setGeometry(QtCore.QRect(10, 500, 160, 31))
         self.pushButton_3.setObjectName("pushButton_3")
+        self.pushButton_3.clicked.connect(self.on_prev_clicked)
+
         self.pushButton_4 = QtWidgets.QPushButton(Dialog)
         self.pushButton_4.setGeometry(QtCore.QRect(170, 500, 161, 31))
         self.pushButton_4.setObjectName("pushButton_4")
+        self.pushButton_4.clicked.connect(self.on_next_clicked)
 
+        self.window = None
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
     def read(self):
-        file_path = './merged.json'
+        file_path = 'merged_.json'
         with open(file_path, 'r', encoding='cp949') as file:
             data = json.load(file)
+            for key in data.keys():
+                try:
+                    int(key.split(":")[1])
+                except:
+                    print(key)
+
             return data
     def setBibleContext(self, bible):
         self.bibleContents = bible
@@ -69,7 +80,7 @@ class Ui_Dialog(object):
         self.pushButton_4.setText(_translate("Dialog", "다음 구절"))
 
     def on_search_clicked(self):
-        txt =self.textEdit.toPlainText().split()
+        txt =self.lineEdit.text().split()
         if len(txt)>2:
             new_dict = self.search_json(txt[0]+txt[1]+":"+txt[2])
             self.addToList(new_dict)
@@ -120,9 +131,36 @@ class Ui_Dialog(object):
         selected_indexes = self.listView.selectedIndexes()
         if selected_indexes:
             title = selected_indexes[0].data()
-            self.window = FullScreenWindow(screen_index=screen_index, title=title, content=self.plainTextEdit.toPlainText())
+            if self.window != None :
+                self.window.close()
+            self.window = FullScreenWindow(self, screen_index=screen_index, title=title, content=self.plainTextEdit.toPlainText())
             self.window.setGeometry(screen_geometry)
             self.window.showFullScreen()
+
+    def on_prev_clicked(self):
+        current_index = self.listView.currentIndex()
+        previous_index = current_index.siblingAtColumn(0).siblingAtRow(current_index.row() - 1)
+
+        if previous_index.isValid():
+            # 이전 인덱스 선택
+            self.listView.selectionModel().clearSelection()
+            self.listView.selectionModel().setCurrentIndex(previous_index, QItemSelectionModel.Select)
+            self.on_item_clicked(previous_index)
+            if self.window != None :
+                self.window.updateContent(previous_index.data(), self.bibleContents[previous_index.data()])
+
+    def on_next_clicked(self):
+        current_index = self.listView.currentIndex()
+        next_index = current_index.siblingAtColumn(0).siblingAtRow(current_index.row() + 1)
+
+        if next_index.isValid():
+            # 이전 인덱스 선택
+            self.listView.selectionModel().clearSelection()
+            self.listView.selectionModel().setCurrentIndex(next_index, QItemSelectionModel.Select)
+            self.on_item_clicked(next_index)
+            if self.window != None:
+                self.window.updateContent(next_index.data(), self.bibleContents[next_index.data()])
+
 
     def search_json(self, keyword):
         new_dict = {}
@@ -132,8 +170,9 @@ class Ui_Dialog(object):
         return new_dict
 
 class FullScreenWindow(QtWidgets.QMainWindow):
-    def __init__(self, screen_index=0,title="", content=""):
+    def __init__(self, parent, screen_index=0,title="", content=""):
         super(FullScreenWindow, self).__init__()
+        self.parent = parent
         self.screen_index = screen_index
         self.initUI(title, content)
     def initUI(self,title,content):
@@ -141,26 +180,26 @@ class FullScreenWindow(QtWidgets.QMainWindow):
         self.setStyleSheet('background-color: black;')
         # QLabel을 사용하여 전체 화면에 텍스트를 표시
         self.setMaximumSize(1920, 1080)
-        titleLbl =QtWidgets.QLabel(title, self)
+        self.titleLbl =QtWidgets.QLabel(title, self)
         font = QFont()
         font.setPointSize(50)
-        titleLbl.setFont(font)
-        titleLbl.setStyleSheet('color:white; margin-bottom: 15px;')
-        titleLbl.setAlignment(Qt.AlignCenter)
-        contentLbl = QtWidgets.QLabel(content, self)
+        self.titleLbl.setFont(font)
+        self.titleLbl.setStyleSheet('color:white; margin-bottom: 15px;')
+        self.titleLbl.setAlignment(Qt.AlignCenter)
+        self.contentLbl = QtWidgets.QLabel(content, self)
         font = QFont()
         font.setPointSize(30)
-        contentLbl.setFont(font)
-        contentLbl.setStyleSheet('color:white;margin-top: 5px; margin-left:20px; margin-right:20px;')
-        contentLbl.setWordWrap(True)
+        self.contentLbl.setFont(font)
+        self.contentLbl.setStyleSheet('color:white;margin-top: 5px; margin-left:20px; margin-right:20px;')
+        self.contentLbl.setWordWrap(True)
         label_ratio = 0.8
-        contentLbl.setAlignment(Qt.AlignCenter)
+        self.contentLbl.setAlignment(Qt.AlignCenter)
 
         # QVBoxLayout을 사용하여 위젯들을 배치
         layout = QtWidgets.QVBoxLayout()
         layout.addStretch()
-        layout.addWidget(titleLbl)
-        layout.addWidget(contentLbl)
+        layout.addWidget(self.titleLbl)
+        layout.addWidget(self.contentLbl)
         layout.addStretch()
 
         # QVBoxLayout의 margin 없애기
@@ -171,11 +210,18 @@ class FullScreenWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self.central_widget)
         # QLabel을 전체 화면으로 표시
 
+    def updateContent(self, title, content):
+        self.titleLbl.setText(title)
+        self.contentLbl.setText(content)
+
 
     def keyPressEvent(self, event):
         # ESC 키를 눌렀을 때 윈도우를 닫음
         if event.key() == Qt.Key_Escape:
             self.close()
+
+    def closeEvent(self, a0):
+        self.parent.window = None
 
 
 if __name__ == "__main__":
