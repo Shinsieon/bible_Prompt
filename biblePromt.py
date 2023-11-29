@@ -126,6 +126,8 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         elif len(txt) == 1:
             new_dict = self.search_json(txt[0])
             self.addToList(new_dict)
+        else :
+            new_dict = self.addToList(self.bibleContents)
 
 
 
@@ -165,6 +167,7 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         self.favView.addItem(list_item)
 
     def addToList(self, bibleJson):
+        self.listView.clear()
         if len(bibleJson)>0:
             for i in bibleJson:
                 item = QtWidgets.QListWidgetItem(i)
