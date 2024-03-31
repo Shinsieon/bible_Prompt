@@ -15,7 +15,7 @@ import json
 class Ui_Dialog(QtWidgets.QMainWindow):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(360, 450)
+        Dialog.resize(360, 500)
         self.lineEdit = QtWidgets.QLineEdit(Dialog)
         self.lineEdit.setGeometry(QtCore.QRect(10, 10, 260, 30))
         self.lineEdit.setObjectName("lineEdit")
@@ -64,20 +64,32 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         self.heightSize.setGeometry(QtCore.QRect(140, 365, 40, 20))
 
         self.fullCheck = QtWidgets.QCheckBox(Dialog)
-        self.fullCheck.setText("전체")
-        self.fullCheck.setGeometry(QtCore.QRect(185, 365, 50, 20))
+        self.fullCheck.setText("확대해서 보기")
+        self.fullCheck.setGeometry(QtCore.QRect(185, 365, 110, 20))
 
         self.fontLbl = QtWidgets.QLabel(Dialog)
-        self.fontLbl.setGeometry(QtCore.QRect(240, 365, 50, 20))
+        self.fontLbl.setGeometry(QtCore.QRect(10, 395, 50, 20))
         self.fontLbl.setText("글씨 크기")
 
-        self.fontSize = QtWidgets.QLineEdit(Dialog)
-        self.fontSize.setGeometry(QtCore.QRect(300, 365, 50, 20))
-        self.fontSize.setText("50")
+        self.titleFontLbl = QtWidgets.QLabel(Dialog)
+        self.titleFontLbl.setGeometry(QtCore.QRect(100, 395, 50, 20))
+        self.titleFontLbl.setText("장")
+
+        self.titleFontSize = QtWidgets.QLineEdit(Dialog)
+        self.titleFontSize.setGeometry(QtCore.QRect(130, 395, 50, 20))
+        self.titleFontSize.setText("70")
+
+        self.subFontLbl = QtWidgets.QLabel(Dialog)
+        self.subFontLbl.setGeometry(QtCore.QRect(200, 395, 20, 20))
+        self.subFontLbl.setText("절")
+
+        self.subFontSize = QtWidgets.QLineEdit(Dialog)
+        self.subFontSize.setGeometry(QtCore.QRect(230, 395, 50, 20))
+        self.subFontSize.setText("50")
 
 
         self.showButton = QtWidgets.QPushButton(Dialog)
-        self.showButton.setGeometry(QtCore.QRect(10, 390, 340, 30))
+        self.showButton.setGeometry(QtCore.QRect(10, 420, 340, 30))
         self.showButton.setObjectName("showButton")
         self.showButton.clicked.connect(self.on_show_clicked)
         self.pushButton_3 = QtWidgets.QPushButton(Dialog)
@@ -91,7 +103,7 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         self.pushButton_4.clicked.connect(self.on_next_clicked)
 
         self.publisher = QtWidgets.QLabel(Dialog)
-        self.publisher.setGeometry(QtCore.QRect(10, 420, 340, 30))
+        self.publisher.setGeometry(QtCore.QRect(10, 450, 340, 30))
         self.publisher.setText("개발자 연락처 : coolguysiun@naver.com")
 
         self.window = None
@@ -116,7 +128,7 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         self.moveToFavButton.setText(_translate("Dialog", "즐찾"))
 
     def on_search_clicked(self):
-        txt =self.lineEdit.text().split()
+        txt =self.lineEdit.text().split() #검색어
         if len(txt)>2:
             new_dict = self.search_json(txt[0]+txt[1]+":"+txt[2])
             self.addToList(new_dict)
@@ -126,8 +138,8 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         elif len(txt) == 1:
             new_dict = self.search_json(txt[0])
             self.addToList(new_dict)
-        else :
-            new_dict = self.addToList(self.bibleContents)
+        else:
+            self.addToList(self.bibleContents)
 
 
 
@@ -135,7 +147,7 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         item_text = index.data(Qt.DisplayRole)
         self.bibleContentEdit.setPlainText(self.bibleContents[item_text])
 
-    def on_fav_item_clicked(self, index):
+    def on_fav_item_clicked(self, index): #즐찾 목록을 선택 시 검색 목록 선택 이벤트와 동일하게 동작합니다.
         item_text = index.data(Qt.DisplayRole)
         self.bibleContentEdit.setPlainText(self.bibleContents[item_text])
         find_index = 0
@@ -147,9 +159,8 @@ class Ui_Dialog(QtWidgets.QMainWindow):
 
         self.listView.setCurrentRow(find_index)
 
-    def on_fav_item_double_clicked(self, index):
+    def on_fav_item_double_clicked(self, index): #더블 클릭시 즐찾 목록에서 제거합니다.
         selected_item = self.favView.currentItem()
-
         if selected_item is not None:
             # 아이템 제거
             row = self.favView.row(selected_item)
@@ -159,7 +170,7 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         item_text = current_index.data()
         list_item = QtWidgets.QListWidgetItem(current_index.data())
 
-        for index in range(self.favView.count()):
+        for index in range(self.favView.count()): #즐찾 목록에 중복 요소가 존재하면 추가하지 않습니다.
             item = self.favView.item(index)
             if item.text() == item_text:
                 return
@@ -200,10 +211,11 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         selected_indexes = self.listView.selectedIndexes()
         if selected_indexes:
             title = selected_indexes[0].data()
+        
             if self.window != None :
                 self.window.updateContent(title, self.bibleContentEdit.toPlainText())
             else:
-                self.window = FullScreenWindow(self, self.widthSize.text(), self.heightSize.text(), self.fontSize.text(), screen_index=screen_index, title=title, content=self.bibleContentEdit.toPlainText())
+                self.window = FullScreenWindow(self, self.widthSize.text(), self.heightSize.text(), self.titleFontSize.text(), self.subFontSize.text(), screen_index=screen_index, title=title, content=self.bibleContentEdit.toPlainText())
                 self.window.setGeometry(screen_geometry)
                 if self.fullCheck.isChecked():
                     self.window.showFullScreen()
@@ -232,7 +244,7 @@ class Ui_Dialog(QtWidgets.QMainWindow):
             self.listView.selectionModel().setCurrentIndex(next_index, QItemSelectionModel.Select)
             self.on_item_clicked(next_index)
             if self.window != None:
-                self.window.updateContent(next_index.data(), self.bibleContents[next_index.data()])
+                self.window.updateContent(next_index.data(), self.bibleContents[next_index.data()]) #모니터에 출력되어 있는 내용을 수정합니다.
 
 
     def search_json(self, keyword):
@@ -243,25 +255,25 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         return new_dict
 
 class FullScreenWindow(QtWidgets.QMainWindow):
-    def __init__(self, parent, width, height, fontSize, screen_index=0,title="", content=""):
+    def __init__(self, parent, width, height, titleFontSize, subFontSize, screen_index=0,title="", content=""):
         super(FullScreenWindow, self).__init__()
         self.parent = parent
         self.screen_index = screen_index
-        self.initUI(width, height, fontSize, title, content)
-    def initUI(self,width, height, fontSize, title,content):
+        self.initUI(width, height, titleFontSize, subFontSize, title, content)
+    def initUI(self,width, height, titleFontSize, subFontSize, title,content):
         self.setWindowTitle('Full Screen Presentation')
         self.setStyleSheet('background-color: black;')
         # QLabel을 사용하여 전체 화면에 텍스트를 표시
         self.setMaximumSize(int(width), int(height))
         self.titleLbl =QtWidgets.QLabel(title, self)
         font = QFont()
-        font.setPointSize(int(fontSize))
+        font.setPointSize(int(titleFontSize))
         self.titleLbl.setFont(font)
         self.titleLbl.setStyleSheet('color:white; margin-bottom: 15px;')
         self.titleLbl.setAlignment(Qt.AlignCenter)
         self.contentLbl = QtWidgets.QLabel(content, self)
         font = QFont()
-        font.setPointSize(int(int(fontSize) * 0.6))
+        font.setPointSize(int(subFontSize))
         self.contentLbl.setFont(font)
         self.contentLbl.setStyleSheet('color:white;margin-top: 5px; margin-left:20px; margin-right:20px;')
         self.contentLbl.setWordWrap(True)
@@ -293,7 +305,6 @@ class FullScreenWindow(QtWidgets.QMainWindow):
 
         if event.key() == Qt.Key_Escape:
             self.close()
-
         elif event.key() == Qt.Key_Left:
             self.parent.on_prev_clicked()
         elif event.key() == Qt.Key_Right:
