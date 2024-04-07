@@ -165,6 +165,8 @@ class Ui_Dialog(QtWidgets.QMainWindow):
     def on_fav_item_clicked(self, index): #즐찾 목록을 선택 시 검색 목록 선택 이벤트와 동일하게 동작합니다.
         item_text = index.data(Qt.DisplayRole)
         self.bibleContentEdit.setPlainText(self.bibleContents[item_text])
+        self.addToList(self.bibleContents)
+
         find_index = 0
         for index in range(self.listView.count()):
             item = self.listView.item(index)
