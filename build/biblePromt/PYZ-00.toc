@@ -1,4 +1,4 @@
-('c:\\Users\\coolg\\PycharmProjects\\pythonProject\\biblePrompt\\build\\biblePromt\\PYZ-00.pyz',
+('C:\\Users\\coolg\\PycharmProjects\\pythonProject\\biblePrompt\\build\\biblePromt\\PYZ-00.pyz',
  [('PyQt5',
    'C:\\Users\\coolg\\PycharmProjects\\pythonProject\\venv\\Lib\\site-packages\\PyQt5\\__init__.py',
    'PYMODULE'),

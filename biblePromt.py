@@ -135,6 +135,7 @@ class Ui_Dialog(QtWidgets.QMainWindow):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "성경말씀 프롬프트"))
+        Dialog.setWindowIcon(QtGui.QIcon('bible.png'))
         self.pushButton.setText(_translate("Dialog", "검색"))
         self.showLbl.setText(_translate("Dialog", "출력 모니터"))
         self.showButton.setText(_translate("Dialog", "모니터에 출력하기"))
