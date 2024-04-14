@@ -326,7 +326,7 @@ class FullScreenWindow(QtWidgets.QMainWindow):
         geometry = screen.availableGeometry()
         # QPixmap 객체 생성
         pixmap = QtGui.QPixmap(image_absolute_path)
-        scaled_pixmap = pixmap.scaled(geometry.width(), geometry.height())
+        scaled_pixmap = pixmap.scaled(geometry.width(), geometry.height()+100)
         qp = QPalette()
         qp.setBrush(QPalette.Background, QBrush(scaled_pixmap))
         self.setPalette(qp)
