@@ -15,14 +15,23 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import os
 import json
+import re
 class Ui_Dialog(QtWidgets.QMainWindow):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.resize(360, 500)
         self.lineEdit = QtWidgets.QLineEdit(Dialog)
-        self.lineEdit.setGeometry(QtCore.QRect(10, 10, 260, 30))
+        self.lineEdit.setGeometry(QtCore.QRect(10, 10, 100, 30))
         self.lineEdit.setObjectName("lineEdit")
-        self.lineEdit.setPlaceholderText("ex) 창 1 2")
+        self.lineEdit.setPlaceholderText("ex) 창세기")
+        self.lineEdit2 = QtWidgets.QLineEdit(Dialog)
+        self.lineEdit2.setGeometry(QtCore.QRect(115, 10, 55, 30))
+        self.lineEdit2.setObjectName("lineEdit")
+        self.lineEdit2.setPlaceholderText("ex) 1")
+        self.lineEdit3 = QtWidgets.QLineEdit(Dialog)
+        self.lineEdit3.setGeometry(QtCore.QRect(175, 10, 55, 30))
+        self.lineEdit3.setObjectName("lineEdit")
+        self.lineEdit3.setPlaceholderText("ex) 1")
 
         self.pushButton = QtWidgets.QPushButton(Dialog)
         self.pushButton.setGeometry(QtCore.QRect(280, 10, 70, 30))
@@ -145,18 +154,12 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         self.moveToFavButton.setText(_translate("Dialog", "즐찾"))
 
     def on_search_clicked(self):
-        txt =self.lineEdit.text().split() #검색어
-        if len(txt)>2:
-            new_dict = self.search_json(txt[0]+txt[1]+":"+txt[2])
-            self.addToList(new_dict)
-        elif len(txt)>1:
-            new_dict = self.search_json(txt[0] + txt[1])
-            self.addToList(new_dict)
-        elif len(txt) == 1:
-            new_dict = self.search_json(txt[0])
-            self.addToList(new_dict)
-        else:
-            self.addToList(self.bibleContents)
+        verse =self.lineEdit.text() #검색어
+        jang = self.lineEdit2.text()
+        jul = self.lineEdit3.text()
+        inputs = [verse, jang, jul]
+        matched_verses = self.search_verses(inputs)
+        self.addToList(matched_verses)
 
 
 
@@ -243,7 +246,8 @@ class Ui_Dialog(QtWidgets.QMainWindow):
                     title=title, 
                     content=self.bibleContentEdit.toPlainText())
                 self.window.setGeometry(screen_geometry)
-                self.window.showFullScreen()
+                #self.window.showFullScreen()
+                self.window.show()
                 # if self.fullCheck.isChecked():
                 #     self.window.showFullScreen()
                 # else :
@@ -299,13 +303,15 @@ class Ui_Dialog(QtWidgets.QMainWindow):
             if self.window != None and next_key != None:
                 self.window.updateContent(next_key, self.bibleContents[next_key]) #모니터에 출력되어 있는 내용을 수정합니다.
 
-
-    def search_json(self, keyword):
-        new_dict = {}
-        for key in self.bibleContents.keys():
-            if keyword in key:
-                new_dict[key] = self.bibleContents[key]
-        return new_dict
+    def search_verses(self, inputs):
+        print(inputs)
+        results = {}
+        for key, value in self.bibleContents.items():
+            parts = key.split()
+            if all(inp in part for inp, part in zip(inputs, parts)):
+                results[key] = value
+        return results
+    
 
 class FullScreenWindow(QtWidgets.QMainWindow):
     def __init__(self, parent, titleFontSize, subFontSize, font_, screen_index=0,title="", content=""):
