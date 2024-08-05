@@ -135,17 +135,25 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
     def read(self):
-        file_path = 'bible.json'
+        file_path = self.resource_path('public/bible.json')
         with open(file_path, 'r', encoding='utf-8') as file:
             data = json.load(file)
             return data
+        
+    def resource_path(self, relative_path):
+        try:
+            base_path = sys._MEIPASS
+        except Exception:
+            base_path = os.path.abspath(".")
+
+        return os.path.join(base_path, relative_path)
     def setBibleContext(self, bible):
         self.bibleContents = bible
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "성경말씀 프롬프트"))
-        Dialog.setWindowIcon(QtGui.QIcon('bible.png'))
+        Dialog.setWindowIcon(QtGui.QIcon(self.resource_path('public/bible.png')))
         self.pushButton.setText(_translate("Dialog", "검색"))
         self.showLbl.setText(_translate("Dialog", "출력 모니터"))
         self.showButton.setText(_translate("Dialog", "모니터에 출력하기"))
@@ -246,8 +254,8 @@ class Ui_Dialog(QtWidgets.QMainWindow):
                     title=title, 
                     content=self.bibleContentEdit.toPlainText())
                 self.window.setGeometry(screen_geometry)
-                #self.window.showFullScreen()
-                self.window.show()
+                self.window.showFullScreen()
+                #self.window.show()
                 # if self.fullCheck.isChecked():
                 #     self.window.showFullScreen()
                 # else :
@@ -323,6 +331,7 @@ class FullScreenWindow(QtWidgets.QMainWindow):
         self.setWindowTitle('Full Screen Presentation')
         # QLabel을 사용하여 전체 화면에 텍스트를 표시
         current_dir = os.path.dirname(os.path.abspath(__file__))
+        print(current_dir)
         # 이미지 파일의 상대 경로
         image_relative_path = 'public/bg.jpg'
         image_absolute_path = os.path.join(current_dir, image_relative_path).replace("\\", "/")
