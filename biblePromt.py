@@ -20,6 +20,7 @@ class Ui_Dialog(QtWidgets.QMainWindow):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.resize(360, 500)
+        self.file_path = None #배경화면 이미지 경로
         self.lineEdit = QtWidgets.QLineEdit(Dialog)
         self.lineEdit.setGeometry(QtCore.QRect(10, 10, 100, 30))
         self.lineEdit.setObjectName("lineEdit")
@@ -63,6 +64,11 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         self.bibleContentEdit.setGeometry(QtCore.QRect(10, 180, 340, 100))
         self.bibleContentEdit.setObjectName("bibleContentEdit")
 
+        self.uploadButton = QtWidgets.QPushButton(Dialog)
+        self.uploadButton.setGeometry(QtCore.QRect(10, 365, 120, 20))
+        self.uploadButton.setObjectName("uploadButton")
+        self.uploadButton.setText("배경화면 변경")
+        self.uploadButton.clicked.connect(self.on_upload_clicked)
         # self.widthSize = QtWidgets.QLineEdit(Dialog)
         # self.widthSize.setText("1920")
         # self.widthSize.setGeometry(QtCore.QRect(90, 365, 40, 20))
@@ -165,7 +171,10 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         matched_verses = self.search_verses(inputs)
         self.addToList(matched_verses)
 
-
+    def on_upload_clicked(self):
+        file_path = QFileDialog.getOpenFileName(self, 'Open file', 'c:\\', "Image files (*.jpg *.png)")
+        if file_path[0]:
+            self.file_path = file_path[0]
 
     def on_item_clicked(self,index):
         item_text = index.data(Qt.DisplayRole)
@@ -248,7 +257,10 @@ class Ui_Dialog(QtWidgets.QMainWindow):
                     self.fontComboBox.currentText(),
                     screen_index=screen_index, 
                     title=title, 
-                    content=self.bibleContentEdit.toPlainText())
+                    content=self.bibleContentEdit.toPlainText(),
+                    img_path= self.file_path
+                    )
+
                 self.window.setGeometry(screen_geometry)
                 self.window.showFullScreen()
                 #self.window.show()
@@ -318,19 +330,19 @@ class Ui_Dialog(QtWidgets.QMainWindow):
     
 
 class FullScreenWindow(QtWidgets.QMainWindow):
-    def __init__(self, parent, titleFontSize, subFontSize, font_, screen_index=0,title="", content=""):
+    def __init__(self, parent, titleFontSize, subFontSize, font_, screen_index=0,title="", content="", img_path=None):
         super(FullScreenWindow, self).__init__()
         self.parent = parent
         self.screen_index = screen_index
-        self.initUI(titleFontSize, subFontSize, font_, title, content)
-    def initUI(self, titleFontSize, subFontSize, font_, title, content):
+        self.initUI(titleFontSize, subFontSize, font_, title, content, img_path)
+    def initUI(self, titleFontSize, subFontSize, font_, title, content, img_path):
         self.setWindowTitle('Full Screen Presentation')
         # QLabel을 사용하여 전체 화면에 텍스트를 표시
         current_dir = os.path.dirname(os.path.abspath(__file__))
         print(current_dir)
         # 이미지 파일의 상대 경로
         image_relative_path = 'public/bg.jpg'
-        image_absolute_path = os.path.join(current_dir, image_relative_path).replace("\\", "/")
+        image_absolute_path = os.path.join(current_dir, image_relative_path).replace("\\", "/") if img_path is None else img_path
         
         app = QApplication.instance()
         screen = app.primaryScreen()
