@@ -63,10 +63,6 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         self.bibleContentEdit.setGeometry(QtCore.QRect(10, 180, 340, 100))
         self.bibleContentEdit.setObjectName("bibleContentEdit")
 
-        # self.sizeLbl = QtWidgets.QLabel(Dialog)
-        # self.sizeLbl.setGeometry(QtCore.QRect(10, 365, 50, 20))
-        # self.sizeLbl.setText("화면 크기")
-
         # self.widthSize = QtWidgets.QLineEdit(Dialog)
         # self.widthSize.setText("1920")
         # self.widthSize.setGeometry(QtCore.QRect(90, 365, 40, 20))
@@ -151,7 +147,7 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         self.bibleContents = bible
 
     def retranslateUi(self, Dialog):
-        _translate = QtCore.QCoreApplication.translate
+        _translate = QtCore.QCoreApplication.translate 
         Dialog.setWindowTitle(_translate("Dialog", "성경말씀 프롬프트"))
         Dialog.setWindowIcon(QtGui.QIcon(self.resource_path('public/bible.png')))
         self.pushButton.setText(_translate("Dialog", "검색"))
@@ -346,7 +342,7 @@ class FullScreenWindow(QtWidgets.QMainWindow):
         qp.setBrush(QPalette.Background, QBrush(scaled_pixmap))
         self.setPalette(qp)
 
-        self.titleLbl =QtWidgets.QLabel(title, self)
+        self.titleLbl =QtWidgets.QLabel(re.sub(r"(\d) (\d)", r"\1 : \2", title), self)
         font = QFont(font_)
         font.setPointSize(int(titleFontSize))
         self.titleLbl.setFont(font)
