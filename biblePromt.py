@@ -280,21 +280,18 @@ class Ui_Dialog(QtWidgets.QMainWindow):
                 self.listView.selectionModel().setCurrentIndex(prev_index, QItemSelectionModel.Select)
                 self.on_item_clicked(prev_index)
         else:
-            current_item = self.window.getTitle()
-
-            keys_list = list(self.bibleContents.keys())
-
-            current_index = keys_list.index(current_item)
-            # 다음 키 구하기
-            if current_index >= 0 and current_index < len(keys_list) - 1:
-                prev_key = keys_list[current_index - 1]
-            else:
-                prev_key = None
-            if self.window != None and prev_key != None:
-                self.window.updateContent(prev_key, self.bibleContents[prev_key]) #모니터에 출력되어 있는 내용을 수정합니다.
+            current_index = self.listView.currentIndex()
+            prev_index = current_index.siblingAtColumn(0).siblingAtRow(current_index.row() - 1)
+            if prev_index.isValid():
+                self.listView.selectionModel().clearSelection()
+                self.listView.selectionModel().setCurrentIndex(prev_index, QItemSelectionModel.Select)
+                keys_list = list(self.bibleContents.keys())
+                prev_key = keys_list[prev_index.row()]
+                self.window.updateContent(prev_key, self.bibleContents[prev_key])
 
 
     def on_next_clicked(self):
+        print(self.window)
         if self.window == None:
             current_index = self.listView.currentIndex()
             next_index = current_index.siblingAtColumn(0).siblingAtRow(current_index.row() + 1)
@@ -306,17 +303,13 @@ class Ui_Dialog(QtWidgets.QMainWindow):
                 self.on_item_clicked(next_index)
 
         else:
-            current_item = self.window.getTitle()
-
-            keys_list = list(self.bibleContents.keys())
-
-            current_index = keys_list.index(current_item)
-            # 다음 키 구하기
-            if current_index >= 0 and current_index < len(keys_list) - 1:
-                next_key = keys_list[current_index + 1]
-            else:
-                next_key = None
-            if self.window != None and next_key != None:
+            current_index = self.listView.currentIndex()
+            next_index = current_index.siblingAtColumn(0).siblingAtRow(current_index.row() + 1)
+            if next_index.isValid():
+                self.listView.selectionModel().clearSelection()
+                self.listView.selectionModel().setCurrentIndex(next_index, QItemSelectionModel.Select)
+                keys_list = list(self.bibleContents.keys())
+                next_key = keys_list[next_index.row()]
                 self.window.updateContent(next_key, self.bibleContents[next_key]) #모니터에 출력되어 있는 내용을 수정합니다.
 
     def search_verses(self, inputs):
@@ -385,7 +378,7 @@ class FullScreenWindow(QtWidgets.QMainWindow):
         # QLabel을 전체 화면으로 표시
 
     def updateContent(self, title, content):
-        self.titleLbl.setText(title)
+        self.titleLbl.setText(re.sub(r"(\d) (\d)", r"\1 : \2", title))
         self.contentLbl.setText(content)
 
 
