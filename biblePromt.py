@@ -18,56 +18,44 @@ import json
 import re
 class Ui_Dialog(QtWidgets.QMainWindow):
     def setupUi(self, Dialog):
-        Dialog.setObjectName("Dialog")
-        Dialog.resize(360, 500)
+        self.resize(360, 500)
         self.file_path = None #배경화면 이미지 경로
-        self.lineEdit = QtWidgets.QLineEdit(Dialog)
+        self.lineEdit = QtWidgets.QLineEdit(self)
         self.lineEdit.setGeometry(QtCore.QRect(10, 10, 100, 30))
-        self.lineEdit.setObjectName("lineEdit")
         self.lineEdit.setPlaceholderText("ex) 창세기")
-        self.lineEdit2 = QtWidgets.QLineEdit(Dialog)
+        self.lineEdit2 = QtWidgets.QLineEdit(self)
         self.lineEdit2.setGeometry(QtCore.QRect(115, 10, 55, 30))
-        self.lineEdit2.setObjectName("lineEdit")
         self.lineEdit2.setPlaceholderText("ex) 1")
-        self.lineEdit3 = QtWidgets.QLineEdit(Dialog)
+        self.lineEdit3 = QtWidgets.QLineEdit(self)
         self.lineEdit3.setGeometry(QtCore.QRect(175, 10, 55, 30))
-        self.lineEdit3.setObjectName("lineEdit")
         self.lineEdit3.setPlaceholderText("ex) 1")
 
-        self.pushButton = QtWidgets.QPushButton(Dialog)
+        self.pushButton = QtWidgets.QPushButton("검색", self)
         self.pushButton.setGeometry(QtCore.QRect(280, 10, 70, 30))
-        self.pushButton.setObjectName("pushButton")
         self.pushButton.clicked.connect(self.on_search_clicked)
-        self.listView = QtWidgets.QListWidget(Dialog)
+        
+        self.listView = QtWidgets.QListWidget(self)
         self.listView.setGeometry(QtCore.QRect(10, 50, 150, 131))
-        self.listView.setObjectName("listView")
         self.listView.clicked.connect(self.on_item_clicked)
 
-        self.moveToFavButton = QtWidgets.QPushButton(Dialog)
+        self.moveToFavButton = QtWidgets.QPushButton("즐찾", self)
         self.moveToFavButton.setGeometry(QtCore.QRect(160, 100, 40, 30))
-        self.moveToFavButton.setObjectName("moveToFav")
         self.moveToFavButton.clicked.connect(self.on_move_clicked)
 
-        self.favView = QtWidgets.QListWidget(Dialog)
+        self.favView = QtWidgets.QListWidget(self)
         self.favView.setGeometry(QtCore.QRect(200, 50, 150, 130))
-        self.favView.setObjectName("favoriteView")
         self.favView.clicked.connect(self.on_fav_item_clicked)
         self.favView.doubleClicked.connect(self.on_fav_item_double_clicked)
 
-        self.comboBox = QtWidgets.QComboBox(Dialog)
+        self.comboBox = QtWidgets.QComboBox(self)
         self.comboBox.setGeometry(QtCore.QRect(90, 340, 260, 20))
-        self.comboBox.setObjectName("comboBox")
-        self.showLbl = QtWidgets.QLabel(Dialog)
+        self.showLbl = QtWidgets.QLabel("출력 모니터", self)
         self.showLbl.setGeometry(QtCore.QRect(10, 340, 70, 20))
-        self.showLbl.setObjectName("label")
-        self.bibleContentEdit = QtWidgets.QPlainTextEdit(Dialog)
+        self.bibleContentEdit = QtWidgets.QPlainTextEdit(self)
         self.bibleContentEdit.setGeometry(QtCore.QRect(10, 180, 340, 100))
-        self.bibleContentEdit.setObjectName("bibleContentEdit")
 
-        self.uploadButton = QtWidgets.QPushButton(Dialog)
+        self.uploadButton = QtWidgets.QPushButton("배경화면 변경", self)
         self.uploadButton.setGeometry(QtCore.QRect(10, 365, 120, 20))
-        self.uploadButton.setObjectName("uploadButton")
-        self.uploadButton.setText("배경화면 변경")
         self.uploadButton.clicked.connect(self.on_upload_clicked)
         # self.widthSize = QtWidgets.QLineEdit(Dialog)
         # self.widthSize.setText("1920")
@@ -81,31 +69,32 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         # self.fullCheck.setText("확대해서 보기")
         # self.fullCheck.setGeometry(QtCore.QRect(185, 365, 110, 20))
 
-        self.fontLbl = QtWidgets.QLabel(Dialog)
+        self.fontLbl = QtWidgets.QLabel(self)
         self.fontLbl.setGeometry(QtCore.QRect(10, 395, 50, 20))
         self.fontLbl.setText("글씨 크기")
 
-        self.titleFontLbl = QtWidgets.QLabel(Dialog)
+        self.titleFontLbl = QtWidgets.QLabel(self)
         self.titleFontLbl.setGeometry(QtCore.QRect(90, 395, 20, 20))
         self.titleFontLbl.setText("장")
 
-        self.titleFontSize = QtWidgets.QLineEdit(Dialog)
+        self.titleFontSize = QtWidgets.QLineEdit(self)
         self.titleFontSize.setGeometry(QtCore.QRect(110, 395, 30, 20))
-        self.titleFontSize.setText("70")
+        settings = self.loadSettings()
+        self.titleFontSize.setText(settings["titleFontSize"])
 
-        self.subFontLbl = QtWidgets.QLabel(Dialog)
+        self.subFontLbl = QtWidgets.QLabel(self)
         self.subFontLbl.setGeometry(QtCore.QRect(150, 395, 20, 20))
         self.subFontLbl.setText("절")
 
-        self.subFontSize = QtWidgets.QLineEdit(Dialog)
+        self.subFontSize = QtWidgets.QLineEdit(self)
         self.subFontSize.setGeometry(QtCore.QRect(170, 395, 30, 20))
-        self.subFontSize.setText("50")
+        self.subFontSize.setText(settings["subFontSize"])
 
-        self.fontLbl = QtWidgets.QLabel(Dialog)
+        self.fontLbl = QtWidgets.QLabel(self)
         self.fontLbl.setGeometry(QtCore.QRect(210, 395, 30, 20))
         self.fontLbl.setText("폰트")
 
-        self.fontComboBox = QtWidgets.QComboBox(Dialog)
+        self.fontComboBox = QtWidgets.QComboBox(self)
         self.fontFamilies = QFontDatabase().families()
         self.fontComboBox.addItems(self.fontFamilies)
         self.fontComboBox.setEditable(True)
@@ -114,28 +103,26 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         # Autocompleting
         self.fontComboBox.completer().setCompletionMode(QtWidgets.QCompleter.PopupCompletion)
         self.fontComboBox.setGeometry(QtCore.QRect(240, 395, 100, 20))
+        self.fontComboBox.setCurrentText(settings["fontFamily"])
 
-        self.showButton = QtWidgets.QPushButton(Dialog)
+        self.showButton = QtWidgets.QPushButton("모니터에 출력하기", self)
         self.showButton.setGeometry(QtCore.QRect(10, 420, 340, 30))
-        self.showButton.setObjectName("showButton")
         self.showButton.clicked.connect(self.on_show_clicked)
-        self.pushButton_3 = QtWidgets.QPushButton(Dialog)
+        self.pushButton_3 = QtWidgets.QPushButton("이전 구절", self)
         self.pushButton_3.setGeometry(QtCore.QRect(10, 300, 170, 30))
-        self.pushButton_3.setObjectName("pushButton_3")
         self.pushButton_3.clicked.connect(self.on_prev_clicked)
 
-        self.pushButton_4 = QtWidgets.QPushButton(Dialog)
+        self.pushButton_4 = QtWidgets.QPushButton("다음 구절", self)
         self.pushButton_4.setGeometry(QtCore.QRect(180, 300, 170, 30))
-        self.pushButton_4.setObjectName("pushButton_4")
         self.pushButton_4.clicked.connect(self.on_next_clicked)
 
-        self.publisher = QtWidgets.QLabel(Dialog)
+        self.publisher = QtWidgets.QLabel(self)
         self.publisher.setGeometry(QtCore.QRect(10, 450, 340, 30))
         self.publisher.setText("개발자 연락처 : coolguysiun@naver.com")
 
         self.window = None
-        self.retranslateUi(Dialog)
-        QtCore.QMetaObject.connectSlotsByName(Dialog)
+        #self.retranslateUi(self)
+        QtCore.QMetaObject.connectSlotsByName(self)
     def read(self):
         file_path = self.resource_path('public/bible.json')
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -185,14 +172,14 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         item_text = index.data(Qt.DisplayRole)
         self.bibleContentEdit.setPlainText(self.bibleContents[item_text])
         self.listView.selectionModel().clearSelection()
-        # find_index = 0
-        # for index in range(self.listView.count()):
-        #     item = self.listView.item(index)
-        #     if item.text() == item_text:
-        #         find_index = index
-        #         break
+        find_index = 0
+        for index in range(self.listView.count()):
+            item = self.listView.item(index)
+            if item.text() == item_text:
+                find_index = index
+                break
 
-        # self.listView.setCurrentRow(find_index)
+        self.listView.setCurrentRow(find_index)
 
     def on_fav_item_double_clicked(self, index): #더블 클릭시 즐찾 목록에서 제거합니다.
         selected_item = self.favView.currentItem()
@@ -243,10 +230,10 @@ class Ui_Dialog(QtWidgets.QMainWindow):
     def on_show_clicked(self):
         screen_index = self.comboBox.currentIndex()
         screen_geometry = QtWidgets.QDesktopWidget().screenGeometry(screen_index)
-        selected_indexes = self.listView.selectedIndexes() or self.favView.selectedIndexes()
+        selected_indexes = self.listView.selectedIndexes()
         if selected_indexes:
             title = selected_indexes[0].data()
-        
+            self.selected_index = list(self.bibleContents.keys()).index(title)
             if self.window != None :
                 self.window.updateContent(title, self.bibleContentEdit.toPlainText())
             else:
@@ -280,22 +267,31 @@ class Ui_Dialog(QtWidgets.QMainWindow):
                 self.listView.selectionModel().setCurrentIndex(prev_index, QItemSelectionModel.Select)
                 self.on_item_clicked(prev_index)
         else:
-            current_index = self.listView.currentIndex()
-            prev_index = current_index.siblingAtColumn(0).siblingAtRow(current_index.row() - 1)
-            if prev_index.isValid():
-                self.listView.selectionModel().clearSelection()
-                self.listView.selectionModel().setCurrentIndex(prev_index, QItemSelectionModel.Select)
-                keys_list = list(self.bibleContents.keys())
-                prev_key = keys_list[prev_index.row()]
-                self.window.updateContent(prev_key, self.bibleContents[prev_key])
+            if self.selected_index:
+                prev_index = self.selected_index - 1
+                if prev_index >= 0:
+                    keys_list = list(self.bibleContents.keys())
+                    prev_key = keys_list[prev_index]
+                    self.window.updateContent(prev_key, self.bibleContents[prev_key])
+                    self.selected_index = prev_index
+            else:
+                current_index = self.listView.currentIndex()
+                prev_index = current_index.siblingAtColumn(0).siblingAtRow(current_index.row() - 1)
+                
+                if prev_index.isValid():
+                    # 이전 인덱스 선택
+                    self.listView.selectionModel().clearSelection()
+                    self.listView.selectionModel().setCurrentIndex(prev_index, QItemSelectionModel.Select)
+                    keys_list = list(self.bibleContents.keys())
+                    prev_key = keys_list[prev_index.row()]
+                    self.window.updateContent(prev_key, self.bibleContents[prev_key])
+                    self.selected_indexes = [prev_index]
 
 
     def on_next_clicked(self):
-        print(self.window)
         if self.window == None:
             current_index = self.listView.currentIndex()
             next_index = current_index.siblingAtColumn(0).siblingAtRow(current_index.row() + 1)
-
             if next_index.isValid():
                 # 이전 인덱스 선택
                 self.listView.selectionModel().clearSelection()
@@ -303,14 +299,26 @@ class Ui_Dialog(QtWidgets.QMainWindow):
                 self.on_item_clicked(next_index)
 
         else:
-            current_index = self.listView.currentIndex()
-            next_index = current_index.siblingAtColumn(0).siblingAtRow(current_index.row() + 1)
-            if next_index.isValid():
-                self.listView.selectionModel().clearSelection()
-                self.listView.selectionModel().setCurrentIndex(next_index, QItemSelectionModel.Select)
-                keys_list = list(self.bibleContents.keys())
-                next_key = keys_list[next_index.row()]
-                self.window.updateContent(next_key, self.bibleContents[next_key]) #모니터에 출력되어 있는 내용을 수정합니다.
+            if self.selected_index:
+                next_index = self.selected_index + 1
+                if next_index < len(self.bibleContents):
+                    keys_list = list(self.bibleContents.keys())
+                    next_key = keys_list[next_index]
+                    self.window.updateContent(next_key, self.bibleContents[next_key])
+                    self.selected_index = next_index
+            else:
+                current_index = self.listView.currentIndex()
+                next_index = current_index.siblingAtColumn(0).siblingAtRow(current_index.row() + 1)
+                if next_index.isValid():
+                    self.listView.selectionModel().clearSelection()
+                    self.listView.selectionModel().setCurrentIndex(next_index, QItemSelectionModel.Select)
+                    keys_list = list(self.bibleContents.keys())
+                    
+                    print(self.listView.selectionModel().currentIndex().data())
+                    next_key = keys_list[next_index.row()]
+                    title = self.listView.selectionModel().currentIndex().data()
+                    self.window.updateContent(title, self.bibleContents[title]) #모니터에 출력되어 있는 내용을 수정합니다.
+                    self.selected_indexes = [next_index]
 
     def search_verses(self, inputs):
         print(inputs)
@@ -320,6 +328,31 @@ class Ui_Dialog(QtWidgets.QMainWindow):
             if all(inp in part for inp, part in zip(inputs, parts)):
                 results[key] = value
         return results
+
+    def loadSettings(self):
+        settings = QtCore.QSettings("BiblePrompt", "BiblePrompt")
+        titleFontSize = settings.value("titleFontSize", "70")
+        subFontSize = settings.value("subFontSize", "50")
+        return {
+            "titleFontSize": titleFontSize,
+            "subFontSize": subFontSize,
+            "fontFamily": settings.value("fontFamily", "맑은 고딕")
+        }
+
+    def closeEvent(self, event):
+        print("closed")
+        settings = QtCore.QSettings("BiblePrompt", "BiblePrompt")
+        settings.setValue("titleFontSize", self.titleFontSize.text())
+        settings.setValue("subFontSize", self.subFontSize.text())
+        settings.setValue("fontFamily", self.fontComboBox.currentText())
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            self.close()
+        elif event.key() == Qt.Key_Return:
+            self.on_search_clicked()
+        elif event.key() == Qt.Key_F5:
+            self.on_show_clicked()
     
 
 class FullScreenWindow(QtWidgets.QMainWindow):
@@ -384,7 +417,7 @@ class FullScreenWindow(QtWidgets.QMainWindow):
 
     def keyPressEvent(self, event):
         # ESC 키를 눌렀을 때 윈도우를 닫음
-
+        print(event.key())
         if event.key() == Qt.Key_Escape:
             self.close()
         elif event.key() == Qt.Key_Left:
@@ -397,6 +430,7 @@ class FullScreenWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, a0):
         self.parent.window = None
+        
 
 
 if __name__ == "__main__":
@@ -414,5 +448,5 @@ if __name__ == "__main__":
         screen_numbers.append('Screen' + str(i+1))
     ui.set_display_info(screen_numbers)
 
-    Dialog.show()
+    ui.show()
     sys.exit(app.exec_())
