@@ -57,6 +57,18 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         self.uploadButton = QtWidgets.QPushButton("배경화면 변경", self)
         self.uploadButton.setGeometry(QtCore.QRect(10, 365, 120, 20))
         self.uploadButton.clicked.connect(self.on_upload_clicked)
+
+        self.fontColor = "#000000"
+        self.fontLabel = QtWidgets.QLabel(self)
+        self.fontLabel.setText("글씨 색상")
+        
+        self.fontLabel.setGeometry(QtCore.QRect(140, 365, 120, 20))
+
+        self.colorBox = QtWidgets.QPushButton(self)
+        self.colorBox.setText("")
+        self.colorBox.setGeometry(QtCore.QRect(210, 365, 20, 20))
+        self.colorBox.setStyleSheet("background-color: " + self.fontColor + ";")
+        self.colorBox.clicked.connect(self.on_color_clicked)
         # self.widthSize = QtWidgets.QLineEdit(Dialog)
         # self.widthSize.setText("1920")
         # self.widthSize.setGeometry(QtCore.QRect(90, 365, 40, 20))
@@ -181,6 +193,12 @@ class Ui_Dialog(QtWidgets.QMainWindow):
 
         self.listView.setCurrentRow(find_index)
 
+    def on_color_clicked(self):
+        color = QColorDialog.getColor()
+        if color.isValid():
+            self.fontColor = color.name()
+            self.colorBox.setStyleSheet("background-color: " + self.fontColor + ";")
+
     def on_fav_item_double_clicked(self, index): #더블 클릭시 즐찾 목록에서 제거합니다.
         selected_item = self.favView.currentItem()
         if selected_item is not None:
@@ -245,16 +263,12 @@ class Ui_Dialog(QtWidgets.QMainWindow):
                     screen_index=screen_index, 
                     title=title, 
                     content=self.bibleContentEdit.toPlainText(),
+                    fontColor=self.fontColor,
                     img_path= self.file_path
                     )
 
                 self.window.setGeometry(screen_geometry)
                 self.window.showFullScreen()
-                #self.window.show()
-                # if self.fullCheck.isChecked():
-                #     self.window.showFullScreen()
-                # else :
-                #     self.window.show()
 
     def on_prev_clicked(self):
         if self.window == None:
@@ -356,12 +370,12 @@ class Ui_Dialog(QtWidgets.QMainWindow):
     
 
 class FullScreenWindow(QtWidgets.QMainWindow):
-    def __init__(self, parent, titleFontSize, subFontSize, font_, screen_index=0,title="", content="", img_path=None):
+    def __init__(self, parent, titleFontSize, subFontSize, font_, screen_index=0,title="", content="", fontColor="#000000", img_path=None):
         super(FullScreenWindow, self).__init__()
         self.parent = parent
         self.screen_index = screen_index
-        self.initUI(titleFontSize, subFontSize, font_, title, content, img_path)
-    def initUI(self, titleFontSize, subFontSize, font_, title, content, img_path):
+        self.initUI(titleFontSize, subFontSize, font_, title, content, fontColor, img_path)
+    def initUI(self, titleFontSize, subFontSize, font_, title, content, fontColor, img_path):
         self.setWindowTitle('Full Screen Presentation')
         # QLabel을 사용하여 전체 화면에 텍스트를 표시
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -384,14 +398,14 @@ class FullScreenWindow(QtWidgets.QMainWindow):
         font = QFont(font_)
         font.setPointSize(int(titleFontSize))
         self.titleLbl.setFont(font)
-        self.titleLbl.setStyleSheet('color:black; margin-bottom: 15px;')
+        self.titleLbl.setStyleSheet('color:'+fontColor+';'+ 'margin-bottom: 15px;')
 
         self.titleLbl.setAlignment(Qt.AlignCenter)
         self.contentLbl = QtWidgets.QLabel(content, self)
         font = QFont(font_)
         font.setPointSize(int(subFontSize))
         self.contentLbl.setFont(font)
-        self.contentLbl.setStyleSheet('color:black;margin-top: 5px; margin-left:20px; margin-right:20px;')
+        self.contentLbl.setStyleSheet('color:' + fontColor+';margin-top: 5px; margin-left:20px; margin-right:20px;')
         self.contentLbl.setWordWrap(True)
         self.contentLbl.setAlignment(Qt.AlignCenter)
 
