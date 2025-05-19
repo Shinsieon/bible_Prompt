@@ -29,7 +29,7 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         self.lineEdit3 = QtWidgets.QLineEdit(self)
         self.lineEdit3.setGeometry(QtCore.QRect(175, 10, 55, 30))
         self.lineEdit3.setPlaceholderText("ex) 1")
-
+        settings = self.loadSettings()
         self.pushButton = QtWidgets.QPushButton("검색", self)
         self.pushButton.setGeometry(QtCore.QRect(280, 10, 70, 30))
         self.pushButton.clicked.connect(self.on_search_clicked)
@@ -58,17 +58,37 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         self.uploadButton.setGeometry(QtCore.QRect(10, 365, 120, 20))
         self.uploadButton.clicked.connect(self.on_upload_clicked)
 
-        self.fontColor = "#000000"
+        self.titleColor = settings["titleColor"] or "#000000"
         self.fontLabel = QtWidgets.QLabel(self)
-        self.fontLabel.setText("글씨 색상")
+        self.fontLabel.setText("장 색상")
         
-        self.fontLabel.setGeometry(QtCore.QRect(140, 365, 120, 20))
+        self.fontLabel.setGeometry(QtCore.QRect(130, 365, 120, 20))
+
+        self.contentColor = settings["contentColor"] or "#000000"
+        self.contentLabel = QtWidgets.QLabel(self)
+        self.contentLabel.setText("절 색상")
+
+
+        self.contentLabel.setGeometry(QtCore.QRect(190, 365, 120, 20))
 
         self.colorBox = QtWidgets.QPushButton(self)
         self.colorBox.setText("")
-        self.colorBox.setGeometry(QtCore.QRect(210, 365, 20, 20))
-        self.colorBox.setStyleSheet("background-color: " + self.fontColor + ";")
-        self.colorBox.clicked.connect(self.on_color_clicked)
+        self.colorBox.setGeometry(QtCore.QRect(170, 365, 20, 20))
+        self.colorBox.setStyleSheet("background-color: " + self.titleColor + ";")
+        self.colorBox.clicked.connect(self.on_title_color_clicked)
+
+        self.contentColorBox = QtWidgets.QPushButton(self)
+        self.contentColorBox.setText("")
+        self.contentColorBox.setGeometry(QtCore.QRect(230, 365, 20, 20))
+        self.contentColorBox.setStyleSheet("background-color: " + self.contentColor + ";")
+        self.contentColorBox.clicked.connect(self.on_content_color_clicked)
+
+        self.sortComboBox = QtWidgets.QComboBox(self)
+        self.sortComboBox.setGeometry(QtCore.QRect(260, 365, 80, 20))
+        self.sortComboBox.addItem("왼쪽정렬")
+        self.sortComboBox.addItem("가운데정렬")
+        self.sortComboBox.addItem("오른쪽정렬")
+        self.sortComboBox.setCurrentText(settings["sortDirection"])
         # self.widthSize = QtWidgets.QLineEdit(Dialog)
         # self.widthSize.setText("1920")
         # self.widthSize.setGeometry(QtCore.QRect(90, 365, 40, 20))
@@ -91,7 +111,7 @@ class Ui_Dialog(QtWidgets.QMainWindow):
 
         self.titleFontSize = QtWidgets.QLineEdit(self)
         self.titleFontSize.setGeometry(QtCore.QRect(110, 395, 30, 20))
-        settings = self.loadSettings()
+        
         self.titleFontSize.setText(settings["titleFontSize"])
 
         self.subFontLbl = QtWidgets.QLabel(self)
@@ -193,11 +213,17 @@ class Ui_Dialog(QtWidgets.QMainWindow):
 
         self.listView.setCurrentRow(find_index)
 
-    def on_color_clicked(self):
+    def on_title_color_clicked(self):
         color = QColorDialog.getColor()
         if color.isValid():
-            self.fontColor = color.name()
-            self.colorBox.setStyleSheet("background-color: " + self.fontColor + ";")
+            self.titleColor = color.name()
+            self.colorBox.setStyleSheet("background-color: " + self.titleColor + ";")
+
+    def on_content_color_clicked(self):
+        color = QColorDialog.getColor()
+        if color.isValid():
+            self.contentColor = color.name()
+            self.contentColorBox.setStyleSheet("background-color: " + self.contentColor + ";")
 
     def on_fav_item_double_clicked(self, index): #더블 클릭시 즐찾 목록에서 제거합니다.
         selected_item = self.favView.currentItem()
@@ -263,12 +289,15 @@ class Ui_Dialog(QtWidgets.QMainWindow):
                     screen_index=screen_index, 
                     title=title, 
                     content=self.bibleContentEdit.toPlainText(),
-                    fontColor=self.fontColor,
+                    titleColor=self.titleColor,
+                    contentColor=self.contentColor,
+                    sortDirection=self.sortComboBox.currentText(),
                     img_path= self.file_path
                     )
 
                 self.window.setGeometry(screen_geometry)
-                self.window.showFullScreen()
+                #self.window.showFullScreen()
+                self.window.show()
 
     def on_prev_clicked(self):
         if self.window == None:
@@ -347,10 +376,17 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         settings = QtCore.QSettings("BiblePrompt", "BiblePrompt")
         titleFontSize = settings.value("titleFontSize", "70")
         subFontSize = settings.value("subFontSize", "50")
+        titleColor = settings.value("titleColor", "#000000")
+        contentColor = settings.value("contentColor", "#000000")
+        sortDirection = settings.value("sortDirection", "가운데정렬")
+
         return {
             "titleFontSize": titleFontSize,
             "subFontSize": subFontSize,
-            "fontFamily": settings.value("fontFamily", "맑은 고딕")
+            "fontFamily": settings.value("fontFamily", "맑은 고딕"),
+            "titleColor": titleColor,
+            "contentColor": contentColor,
+            "sortDirection": sortDirection
         }
 
     def closeEvent(self, event):
@@ -359,6 +395,9 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         settings.setValue("titleFontSize", self.titleFontSize.text())
         settings.setValue("subFontSize", self.subFontSize.text())
         settings.setValue("fontFamily", self.fontComboBox.currentText())
+        settings.setValue("titleColor", self.titleColor)
+        settings.setValue("contentColor", self.contentColor)
+        settings.setValue("sortDirection", self.sortComboBox.currentText())
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
@@ -370,12 +409,13 @@ class Ui_Dialog(QtWidgets.QMainWindow):
     
 
 class FullScreenWindow(QtWidgets.QMainWindow):
-    def __init__(self, parent, titleFontSize, subFontSize, font_, screen_index=0,title="", content="", fontColor="#000000", img_path=None):
+    def __init__(self, parent, titleFontSize, subFontSize, font_, screen_index=0,title="", content="", titleColor="#000000", contentColor="#000000", 
+                sortDirection="가운데정렬", img_path=None):
         super(FullScreenWindow, self).__init__()
         self.parent = parent
         self.screen_index = screen_index
-        self.initUI(titleFontSize, subFontSize, font_, title, content, fontColor, img_path)
-    def initUI(self, titleFontSize, subFontSize, font_, title, content, fontColor, img_path):
+        self.initUI(titleFontSize, subFontSize, font_, title, content, titleColor, contentColor,sortDirection, img_path)
+    def initUI(self, titleFontSize, subFontSize, font_, title, content, titleColor, contentColor,sortDirection, img_path):
         self.setWindowTitle('Full Screen Presentation')
         # QLabel을 사용하여 전체 화면에 텍스트를 표시
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -398,16 +438,26 @@ class FullScreenWindow(QtWidgets.QMainWindow):
         font = QFont(font_)
         font.setPointSize(int(titleFontSize))
         self.titleLbl.setFont(font)
-        self.titleLbl.setStyleSheet('color:'+fontColor+';'+ 'margin-bottom: 15px;')
+        self.titleLbl.setStyleSheet('color:'+titleColor+';'+ 'margin-bottom: 15px;')
 
-        self.titleLbl.setAlignment(Qt.AlignCenter)
+        if sortDirection == "왼쪽정렬":
+            self.titleLbl.setAlignment(Qt.AlignLeft)
+        elif sortDirection == "오른쪽정렬":
+            self.titleLbl.setAlignment(Qt.AlignRight)
+        else:
+            self.titleLbl.setAlignment(Qt.AlignCenter)
         self.contentLbl = QtWidgets.QLabel(content, self)
         font = QFont(font_)
         font.setPointSize(int(subFontSize))
         self.contentLbl.setFont(font)
-        self.contentLbl.setStyleSheet('color:' + fontColor+';margin-top: 5px; margin-left:20px; margin-right:20px;')
+        self.contentLbl.setStyleSheet('color:' + contentColor+';margin-top: 5px; margin-left:20px; margin-right:20px;')
         self.contentLbl.setWordWrap(True)
-        self.contentLbl.setAlignment(Qt.AlignCenter)
+        if sortDirection == "왼쪽정렬":
+            self.contentLbl.setAlignment(Qt.AlignLeft)
+        elif sortDirection == "오른쪽정렬":
+            self.contentLbl.setAlignment(Qt.AlignRight)
+        else:
+            self.contentLbl.setAlignment(Qt.AlignCenter)
 
         # QVBoxLayout을 사용하여 위젯들을 배치
         layout = QtWidgets.QVBoxLayout()
