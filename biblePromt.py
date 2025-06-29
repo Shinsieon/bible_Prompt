@@ -29,7 +29,7 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         self.lineEdit3 = QtWidgets.QLineEdit(self)
         self.lineEdit3.setGeometry(QtCore.QRect(175, 10, 55, 30))
         self.lineEdit3.setPlaceholderText("ex) 1")
-        settings = self.loadSettings()
+        self.settings = self.loadSettings()
         self.pushButton = QtWidgets.QPushButton("검색", self)
         self.pushButton.setGeometry(QtCore.QRect(280, 10, 70, 30))
         self.pushButton.clicked.connect(self.on_search_clicked)
@@ -49,6 +49,7 @@ class Ui_Dialog(QtWidgets.QMainWindow):
 
         self.comboBox = QtWidgets.QComboBox(self)
         self.comboBox.setGeometry(QtCore.QRect(90, 340, 260, 20))
+
         self.showLbl = QtWidgets.QLabel("출력 모니터", self)
         self.showLbl.setGeometry(QtCore.QRect(10, 340, 70, 20))
         self.bibleContentEdit = QtWidgets.QPlainTextEdit(self)
@@ -58,13 +59,13 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         self.uploadButton.setGeometry(QtCore.QRect(10, 365, 120, 20))
         self.uploadButton.clicked.connect(self.on_upload_clicked)
 
-        self.titleColor = settings["titleColor"] or "#000000"
+        self.titleColor = self.settings["titleColor"] or "#000000"
         self.fontLabel = QtWidgets.QLabel(self)
         self.fontLabel.setText("장 색상")
         
         self.fontLabel.setGeometry(QtCore.QRect(130, 365, 120, 20))
 
-        self.contentColor = settings["contentColor"] or "#000000"
+        self.contentColor = self.settings["contentColor"] or "#000000"
         self.contentLabel = QtWidgets.QLabel(self)
         self.contentLabel.setText("절 색상")
 
@@ -88,18 +89,7 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         self.sortComboBox.addItem("왼쪽정렬")
         self.sortComboBox.addItem("가운데정렬")
         self.sortComboBox.addItem("오른쪽정렬")
-        self.sortComboBox.setCurrentText(settings["sortDirection"])
-        # self.widthSize = QtWidgets.QLineEdit(Dialog)
-        # self.widthSize.setText("1920")
-        # self.widthSize.setGeometry(QtCore.QRect(90, 365, 40, 20))
-
-        # self.heightSize = QtWidgets.QLineEdit(Dialog)
-        # self.heightSize.setText("1080")
-        # self.heightSize.setGeometry(QtCore.QRect(140, 365, 40, 20))
-
-        # self.fullCheck = QtWidgets.QCheckBox(Dialog)
-        # self.fullCheck.setText("확대해서 보기")
-        # self.fullCheck.setGeometry(QtCore.QRect(185, 365, 110, 20))
+        self.sortComboBox.setCurrentText(self.settings["sortDirection"])
 
         self.fontLbl = QtWidgets.QLabel(self)
         self.fontLbl.setGeometry(QtCore.QRect(10, 395, 50, 20))
@@ -112,7 +102,7 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         self.titleFontSize = QtWidgets.QLineEdit(self)
         self.titleFontSize.setGeometry(QtCore.QRect(110, 395, 30, 20))
         
-        self.titleFontSize.setText(settings["titleFontSize"])
+        self.titleFontSize.setText(self.settings["titleFontSize"])
 
         self.subFontLbl = QtWidgets.QLabel(self)
         self.subFontLbl.setGeometry(QtCore.QRect(150, 395, 20, 20))
@@ -120,7 +110,7 @@ class Ui_Dialog(QtWidgets.QMainWindow):
 
         self.subFontSize = QtWidgets.QLineEdit(self)
         self.subFontSize.setGeometry(QtCore.QRect(170, 395, 30, 20))
-        self.subFontSize.setText(settings["subFontSize"])
+        self.subFontSize.setText(self.settings["subFontSize"])
 
         self.fontLbl = QtWidgets.QLabel(self)
         self.fontLbl.setGeometry(QtCore.QRect(210, 395, 30, 20))
@@ -135,7 +125,7 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         # Autocompleting
         self.fontComboBox.completer().setCompletionMode(QtWidgets.QCompleter.PopupCompletion)
         self.fontComboBox.setGeometry(QtCore.QRect(240, 395, 100, 20))
-        self.fontComboBox.setCurrentText(settings["fontFamily"])
+        self.fontComboBox.setCurrentText(self.settings["fontFamily"])
 
         self.showButton = QtWidgets.QPushButton("모니터에 출력하기", self)
         self.showButton.setGeometry(QtCore.QRect(10, 420, 340, 30))
@@ -250,6 +240,13 @@ class Ui_Dialog(QtWidgets.QMainWindow):
                 item = QtWidgets.QListWidgetItem(i)
                 self.listView.addItem(item)
 
+            # 첫 번째 아이템 선택
+            self.listView.setCurrentRow(0)
+
+            # 첫 번째 아이템 클릭된 상태로 on_item_clicked 호출
+            first_item = self.listView.item(0)
+            self.on_item_clicked(first_item)
+
     def get_display_info(self,app):
         # 모든 활성화된 스크린 정보 가져오기
         screens = app.screens()
@@ -271,6 +268,8 @@ class Ui_Dialog(QtWidgets.QMainWindow):
 
     def set_display_info(self,screens):
         self.comboBox.addItems(screens)
+        if self.settings["screenIndex"] is not None:
+            self.comboBox.setCurrentIndex(self.settings["screenIndex"])
     def on_show_clicked(self):
         screen_index = self.comboBox.currentIndex()
         screen_geometry = QtWidgets.QDesktopWidget().screenGeometry(screen_index)
@@ -296,8 +295,8 @@ class Ui_Dialog(QtWidgets.QMainWindow):
                     )
 
                 self.window.setGeometry(screen_geometry)
-                #self.window.showFullScreen()
-                self.window.show()
+                self.window.showFullScreen()
+                #self.window.show()
 
     def on_prev_clicked(self):
         if self.window == None:
@@ -379,6 +378,8 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         titleColor = settings.value("titleColor", "#000000")
         contentColor = settings.value("contentColor", "#000000")
         sortDirection = settings.value("sortDirection", "가운데정렬")
+        screen_index = settings.value("screenIndex", 0, type=int)
+
 
         return {
             "titleFontSize": titleFontSize,
@@ -386,7 +387,8 @@ class Ui_Dialog(QtWidgets.QMainWindow):
             "fontFamily": settings.value("fontFamily", "맑은 고딕"),
             "titleColor": titleColor,
             "contentColor": contentColor,
-            "sortDirection": sortDirection
+            "sortDirection": sortDirection,
+            "screenIndex": screen_index
         }
 
     def closeEvent(self, event):
@@ -398,6 +400,7 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         settings.setValue("titleColor", self.titleColor)
         settings.setValue("contentColor", self.contentColor)
         settings.setValue("sortDirection", self.sortComboBox.currentText())
+        settings.setValue("screenIndex", self.comboBox.currentIndex())
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
