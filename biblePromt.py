@@ -418,43 +418,50 @@ class FullScreenWindow(QtWidgets.QMainWindow):
         self.parent = parent
         self.screen_index = screen_index
         self.initUI(titleFontSize, subFontSize, font_, title, content, titleColor, contentColor,sortDirection, img_path)
-    def initUI(self, titleFontSize, subFontSize, font_, title, content, titleColor, contentColor,sortDirection, img_path):
+
+    def initUI(self, titleFontSize, subFontSize, font_, title, content, titleColor, contentColor, sortDirection, img_path):
         self.setWindowTitle('Full Screen Presentation')
-        # QLabel을 사용하여 전체 화면에 텍스트를 표시
+
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        print(current_dir)
-        # 이미지 파일의 상대 경로
         image_relative_path = 'public/bg.jpg'
         image_absolute_path = os.path.join(current_dir, image_relative_path).replace("\\", "/") if img_path is None else img_path
-        
+
         app = QApplication.instance()
         screen = app.primaryScreen()
         geometry = screen.availableGeometry()
-        # QPixmap 객체 생성
+
+        # 배경 이미지 설정
         pixmap = QtGui.QPixmap(image_absolute_path)
-        scaled_pixmap = pixmap.scaled(geometry.width(), geometry.height()+100)
+        scaled_pixmap = pixmap.scaled(geometry.width(), geometry.height() + 100)
         qp = QPalette()
         qp.setBrush(QPalette.Background, QBrush(scaled_pixmap))
         self.setPalette(qp)
 
-        self.titleLbl =QtWidgets.QLabel(re.sub(r"(\d) (\d)", r"\1 : \2", title), self)
-        font = QFont(font_)
-        font.setPointSize(int(titleFontSize))
-        self.titleLbl.setFont(font)
-        self.titleLbl.setStyleSheet('color:'+titleColor+';'+ 'margin-bottom: 15px;')
+        # 제목 라벨
+        self.titleLbl = QtWidgets.QLabel(re.sub(r"(\d) (\d)", r"\1 : \2", title))
+        titleFont = QFont(font_)
+        titleFont.setPointSize(int(titleFontSize))
+        self.titleLbl.setFont(titleFont)
+        self.titleLbl.setStyleSheet('color:' + titleColor + '; margin-bottom: 15px;')
+        self.titleLbl.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
 
+        # 정렬 설정
         if sortDirection == "왼쪽정렬":
             self.titleLbl.setAlignment(Qt.AlignLeft)
         elif sortDirection == "오른쪽정렬":
             self.titleLbl.setAlignment(Qt.AlignRight)
         else:
             self.titleLbl.setAlignment(Qt.AlignCenter)
-        self.contentLbl = QtWidgets.QLabel(content, self)
-        font = QFont(font_)
-        font.setPointSize(int(subFontSize))
-        self.contentLbl.setFont(font)
-        self.contentLbl.setStyleSheet('color:' + contentColor+';margin-top: 5px; margin-left:20px; margin-right:20px;')
+
+        # 본문 라벨
+        self.contentLbl = QtWidgets.QLabel(content)
+        contentFont = QFont(font_)
+        contentFont.setPointSize(int(subFontSize))
+        self.contentLbl.setFont(contentFont)
+        self.contentLbl.setStyleSheet('color:' + contentColor + '; margin: 5px 20px;')
         self.contentLbl.setWordWrap(True)
+        self.contentLbl.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
         if sortDirection == "왼쪽정렬":
             self.contentLbl.setAlignment(Qt.AlignLeft)
         elif sortDirection == "오른쪽정렬":
@@ -462,18 +469,34 @@ class FullScreenWindow(QtWidgets.QMainWindow):
         else:
             self.contentLbl.setAlignment(Qt.AlignCenter)
 
-        # QVBoxLayout을 사용하여 위젯들을 배치
-        layout = QtWidgets.QVBoxLayout()
-        layout.addStretch()
-        layout.addWidget(self.titleLbl)
-        layout.addWidget(self.contentLbl)
-        layout.addStretch()
+        # 스크롤 영역 설정
+        scrollArea = QtWidgets.QScrollArea()
+        scrollArea.setWidgetResizable(True)
+        scrollArea.setStyleSheet("background: transparent;")
+        scrollArea.setFrameShape(QtWidgets.QFrame.NoFrame)
 
-        # QVBoxLayout의 margin 없애기
+        # 스크롤 안의 내용
+        scrollContent = QtWidgets.QWidget()
+        scrollContent.setStyleSheet("background: transparent;")
+        scrollLayout = QtWidgets.QVBoxLayout(scrollContent)
+        scrollLayout.setContentsMargins(0, 0, 0, 0)
+        scrollLayout.setSpacing(10)
+        scrollLayout.addStretch()
+        scrollLayout.addWidget(self.titleLbl)
+        scrollLayout.addWidget(self.contentLbl)
+        scrollLayout.addStretch()
 
-        # QWidget을 사용하여 위젯들을 감싸고, 윈도우의 중앙에 위치시킴
+        scrollArea.setWidget(scrollContent)
+
+        # 중앙 위젯 레이아웃
+        mainLayout = QtWidgets.QVBoxLayout()
+        mainLayout.setContentsMargins(0, 0, 0, 0)
+        mainLayout.addWidget(scrollArea)
+
         self.central_widget = QtWidgets.QWidget()
-        self.central_widget.setLayout(layout)
+        self.central_widget.setLayout(mainLayout)
+        self.central_widget.setContentsMargins(0, 0, 0, 0)
+
         self.setCentralWidget(self.central_widget)
         # QLabel을 전체 화면으로 표시
 
