@@ -30,6 +30,10 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         self.lineEdit3.setGeometry(QtCore.QRect(175, 10, 55, 30))
         self.lineEdit3.setPlaceholderText("ex) 1")
         self.settings = self.loadSettings()
+
+        self.clearButton = QtWidgets.QPushButton("초기화", self)
+        self.clearButton.setGeometry(QtCore.QRect(235, 10, 45, 30))
+        self.clearButton.clicked.connect(self.on_clear_clicked)
         self.pushButton = QtWidgets.QPushButton("검색", self)
         self.pushButton.setGeometry(QtCore.QRect(280, 10, 70, 30))
         self.pushButton.clicked.connect(self.on_search_clicked)
@@ -38,14 +42,17 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         self.listView.setGeometry(QtCore.QRect(10, 50, 150, 131))
         self.listView.clicked.connect(self.on_item_clicked)
 
-        self.moveToFavButton = QtWidgets.QPushButton("즐찾", self)
-        self.moveToFavButton.setGeometry(QtCore.QRect(160, 100, 40, 30))
+        self.moveToFavButton = QtWidgets.QPushButton("즐찾\n(F3)", self)
+        self.moveToFavButton.setGeometry(QtCore.QRect(160, 100, 40, 50))
         self.moveToFavButton.clicked.connect(self.on_move_clicked)
 
         self.favView = QtWidgets.QListWidget(self)
         self.favView.setGeometry(QtCore.QRect(200, 50, 150, 130))
+        self.favView.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.favView.setDragDropMode(QAbstractItemView.InternalMove)
         self.favView.clicked.connect(self.on_fav_item_clicked)
         self.favView.doubleClicked.connect(self.on_fav_item_double_clicked)
+        self.favView.setToolTip("더블 클릭 시 즐겨찾기에서 제거됩니다.")
 
         self.comboBox = QtWidgets.QComboBox(self)
         self.comboBox.setGeometry(QtCore.QRect(90, 340, 260, 20))
@@ -58,6 +65,11 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         self.uploadButton = QtWidgets.QPushButton("배경화면 변경", self)
         self.uploadButton.setGeometry(QtCore.QRect(10, 365, 120, 20))
         self.uploadButton.clicked.connect(self.on_upload_clicked)
+
+        favorites = self.settings["favorites"]
+        for fav in favorites:
+            item = QtWidgets.QListWidgetItem(fav)
+            self.favView.addItem(item)
 
         self.titleColor = self.settings["titleColor"] or "#000000"
         self.fontLabel = QtWidgets.QLabel(self)
@@ -127,9 +139,14 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         self.fontComboBox.setGeometry(QtCore.QRect(240, 395, 100, 20))
         self.fontComboBox.setCurrentText(self.settings["fontFamily"])
 
-        self.showButton = QtWidgets.QPushButton("모니터에 출력하기", self)
+        self.showButton = QtWidgets.QPushButton("모니터에 출력하기(F5)", self)
         self.showButton.setGeometry(QtCore.QRect(10, 420, 340, 30))
         self.showButton.clicked.connect(self.on_show_clicked)
+
+        self.save_last_favorites = QtWidgets.QCheckBox("즐겨찾기 저장", self)
+        self.save_last_favorites.setGeometry(QtCore.QRect(10, 455, 100, 20))
+        self.save_last_favorites.setChecked(True)
+
         self.pushButton_3 = QtWidgets.QPushButton("이전 구절", self)
         self.pushButton_3.setGeometry(QtCore.QRect(10, 300, 170, 30))
         self.pushButton_3.clicked.connect(self.on_prev_clicked)
@@ -139,7 +156,7 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         self.pushButton_4.clicked.connect(self.on_next_clicked)
 
         self.publisher = QtWidgets.QLabel(self)
-        self.publisher.setGeometry(QtCore.QRect(10, 450, 340, 30))
+        self.publisher.setGeometry(QtCore.QRect(10, 475, 340, 20))
         self.publisher.setText("개발자 연락처 : coolguysiun@naver.com")
 
         self.window = None
@@ -179,6 +196,14 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         inputs = [verse, jang, jul]
         matched_verses = self.search_verses(inputs)
         self.addToList(matched_verses)
+
+    def on_clear_clicked(self):
+        self.lineEdit.clear()
+        self.lineEdit2.clear()
+        self.lineEdit3.clear()
+        self.listView.clear()
+        self.bibleContentEdit.clear()
+        self.on_search_clicked()
 
     def on_upload_clicked(self):
         file_path = QFileDialog.getOpenFileName(self, 'Open file', 'c:\\', "Image files (*.jpg *.png)")
@@ -226,12 +251,13 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         item_text = current_index.data()
         list_item = QtWidgets.QListWidgetItem(current_index.data())
 
-        for index in range(self.favView.count()): #즐찾 목록에 중복 요소가 존재하면 추가하지 않습니다.
-            item = self.favView.item(index)
-            if item.text() == item_text:
-                return
+        # for index in range(self.favView.count()): #즐찾 목록에 중복 요소가 존재하면 추가하지 않습니다.
+        #     item = self.favView.item(index)
+        #     if item.text() == item_text:
+        #         return
 
         self.favView.addItem(list_item)
+        self.favView.setCurrentRow(self.favView.count()-1)
 
     def addToList(self, bibleJson):
         self.listView.clear()
@@ -299,7 +325,9 @@ class Ui_Dialog(QtWidgets.QMainWindow):
                 #self.window.show()
 
     def on_prev_clicked(self):
+        print("prev clicked")
         if self.window == None:
+            print("no window")
             current_index = self.listView.currentIndex()
             prev_index = current_index.siblingAtColumn(0).siblingAtRow(current_index.row() - 1)
 
@@ -363,12 +391,12 @@ class Ui_Dialog(QtWidgets.QMainWindow):
                     self.selected_indexes = [next_index]
 
     def search_verses(self, inputs):
-        print(inputs)
         results = {}
         for key, value in self.bibleContents.items():
             parts = key.split()
             if all(inp in part for inp, part in zip(inputs, parts)):
                 results[key] = value
+            
         return results
 
     def loadSettings(self):
@@ -379,7 +407,7 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         contentColor = settings.value("contentColor", "#000000")
         sortDirection = settings.value("sortDirection", "가운데정렬")
         screen_index = settings.value("screenIndex", 0, type=int)
-
+        favorites = settings.value("favorites", [], type=list)
 
         return {
             "titleFontSize": titleFontSize,
@@ -388,7 +416,8 @@ class Ui_Dialog(QtWidgets.QMainWindow):
             "titleColor": titleColor,
             "contentColor": contentColor,
             "sortDirection": sortDirection,
-            "screenIndex": screen_index
+            "screenIndex": screen_index,
+            "favorites": favorites
         }
 
     def closeEvent(self, event):
@@ -401,12 +430,23 @@ class Ui_Dialog(QtWidgets.QMainWindow):
         settings.setValue("contentColor", self.contentColor)
         settings.setValue("sortDirection", self.sortComboBox.currentText())
         settings.setValue("screenIndex", self.comboBox.currentIndex())
+        if self.save_last_favorites.isChecked():
+            fav_items = []
+            for index in range(self.favView.count()):
+                item = self.favView.item(index)
+                fav_items.append(item.text())
+            settings.setValue("favorites", fav_items)
+        else :
+            settings.setValue("favorites", [])
 
     def keyPressEvent(self, event):
+        print('Key Pressed:', event.key())
         if event.key() == Qt.Key_Escape:
             self.close()
         elif event.key() == Qt.Key_Return:
             self.on_search_clicked()
+        elif event.key() == Qt.Key_F3:
+            self.on_move_clicked()
         elif event.key() == Qt.Key_F5:
             self.on_show_clicked()
     
@@ -474,6 +514,7 @@ class FullScreenWindow(QtWidgets.QMainWindow):
         scrollArea.setWidgetResizable(True)
         scrollArea.setStyleSheet("background: transparent;")
         scrollArea.setFrameShape(QtWidgets.QFrame.NoFrame)
+        scrollArea.setFocusPolicy(Qt.NoFocus)
 
         # 스크롤 안의 내용
         scrollContent = QtWidgets.QWidget()
@@ -496,7 +537,7 @@ class FullScreenWindow(QtWidgets.QMainWindow):
         self.central_widget = QtWidgets.QWidget()
         self.central_widget.setLayout(mainLayout)
         self.central_widget.setContentsMargins(0, 0, 0, 0)
-
+        
         self.setCentralWidget(self.central_widget)
         # QLabel을 전체 화면으로 표시
 
